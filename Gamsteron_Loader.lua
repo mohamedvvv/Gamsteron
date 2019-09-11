@@ -26,7 +26,7 @@ do -- get version.lua
     local oldPath, newPath, url, timer
 
     oldPath = COMMON_PATH .. "Gamsteron_Version_Old.lua"
-    newPath = COMMON_PATH .. "Gamsteron_Version_New.lua"
+    newPath = COMMON_PATH .. "Gamsteron_Version.lua"
     url = SDK.Url .. "Gamsteron_Version.lua"
     
     if FileExist(oldPath) then
@@ -48,7 +48,7 @@ do -- get version.lua
         return
     end
     
-    SDK.NewVersion = require("Gamsteron_Version_New")
+    SDK.NewVersion = require("Gamsteron_Version")
 end
 
 do -- download updates
@@ -84,7 +84,7 @@ do -- download updates
     local Updated = false
     local function SaveOldVersion()
         local oldPath = COMMON_PATH .. "Gamsteron_Version_Old.lua"
-        local newPath = COMMON_PATH .. "Gamsteron_Version_New.lua"
+        local newPath = COMMON_PATH .. "Gamsteron_Version.lua"
         local fi = io.open(newPath, "r")
         local fo = io.open(oldPath, "w")
         fo:write(fi:read("*all"))
