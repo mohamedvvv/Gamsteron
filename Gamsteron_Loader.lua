@@ -410,7 +410,7 @@ function SDK.Menu:Init
     self.Main:MenuElement({id = 'CursorDelay', name = 'Cursor Delay', value = 30, min = 30, max = 50, step = 5})
     
     self.Main:MenuElement({name = '', type = _G.SPACE, id = 'VersionSpaceA'})
-    self.Main:MenuElement({name = 'Version  ' .. SDK.NewVersion.Loader[1], type = _G.SPACE, id = 'VersionSpaceB'})
+    self.Main:MenuElement({name = 'Version  ' .. SDK.NewVersion.Gamsteron_Loader, type = _G.SPACE, id = 'VersionSpaceB'})
     
     _G.LATENCY = self.Main.Latency:Value()
 end
