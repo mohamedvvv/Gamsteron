@@ -935,7 +935,7 @@ do
     end
 end
 
-Data = require("Gamsteron\\Arrays")
+Data = require("Gamsteron_Arrays")
 
 do
     function Data:Init

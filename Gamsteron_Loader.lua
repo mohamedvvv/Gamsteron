@@ -24,11 +24,11 @@ do -- get version.lua
     local path, url, timer
     
     SDK.Url = "https://raw.githubusercontent.com/GSOProject/Gamsteron/master/"
-    path = COMMON_PATH .. "Gamsteron\\Version.lua"
-    url = SDK.Url .. "Version.lua"
+    path = COMMON_PATH .. "Gamsteron_Version.lua"
+    url = SDK.Url .. "Gamsteron_Version.lua"
     
     if FileExist(path) then
-        SDK.OldVersion = require("Gamsteron\\Version")
+        SDK.OldVersion = require("Gamsteron_Version")
     end
     
     DownloadFileAsync(url, path, function() end)
@@ -46,7 +46,7 @@ do -- get version.lua
         return
     end
     
-    SDK.NewVersion = require("Gamsteron\\Version")
+    SDK.NewVersion = require("Gamsteron_Version")
 end
 
 do -- download updates
@@ -82,13 +82,13 @@ do -- download updates
     if SDK.OldVersion == nil then
         for k, v in pairs(SDK.NewVersion) do
             print("Downloading " .. k .. ".lua, please wait...")
-            DownloadFile(v[2] .. k .. ".lua", SDK.Url .. k .. ".lua")
+            DownloadFile(COMMON_PATH .. k .. ".lua", SDK.Url .. k .. ".lua")
         end
     else
         for k, v in pairs(SDK.NewVersion) do
-            if SDK.OldVersion[k] == nil or v[1] > SDK.OldVersion[k][1] then
+            if SDK.OldVersion[k] == nil or v > SDK.OldVersion[k] then
                 print("Downloading " .. k .. ".lua, please wait...")
-                DownloadFile(v[2] .. k .. ".lua", SDK.Url .. k .. ".lua")
+                DownloadFile(COMMON_PATH .. k .. ".lua", SDK.Url .. k .. ".lua")
                 SDK.Downloaded = true
             end
         end
@@ -415,7 +415,7 @@ function SDK.Menu:Init
     _G.LATENCY = self.Main.Latency:Value()
 end
 
-require("Gamsteron\\Utilities")
+require("Gamsteron_Utilities")
 Color = SDK.Color
 Action = SDK.Action
 Buff = SDK.BuffManager
@@ -424,17 +424,17 @@ Damage = SDK.Damage
 Data = SDK.Data
 Spell = SDK.Spell
 
-require("Gamsteron\\Activator")
+require("Gamsteron_Activator")
 LevelUp = SDK.LevelUp
 SummonerSpell = SDK.SummonerSpell
 Item = SDK.ItemManager
 
-require("Gamsteron\\ObjectManager")
+require("Gamsteron_ObjectManager")
 Object = SDK.ObjectManager
 Target = SDK.TargetSelector
 Health = SDK.HealthPrediction
 
-require("Gamsteron\\Orbwalker")
+require("Gamsteron_Orbwalker")
 Cursor = SDK.Cursor
 Attack = SDK.Attack
 Orbwalker = SDK.Orbwalker
