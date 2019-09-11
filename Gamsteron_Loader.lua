@@ -114,6 +114,10 @@ do -- download updates
             end
         end
     end
+
+    if not FileExist(COMMON_PATH .. "Gamsteron_Version_Old.lua") then
+        SaveOldVersion()
+    end
     
     if SDK.Downloaded then
         print("Update Completed, please 2x F6!")
