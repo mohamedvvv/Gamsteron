@@ -23,7 +23,7 @@ _G.SDK =
 do -- get version.lua
     local path, url, timer
     
-    SDK.Url = "https://raw.githubusercontent.com/GSOProject/Gamsteron/master/"
+    SDK.Url = "https://raw.githubusercontent.com/gamsteron/Gamsteron/master/"
     path = COMMON_PATH .. "Gamsteron_Version.lua"
     url = SDK.Url .. "Gamsteron_Version.lua"
     
