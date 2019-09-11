@@ -21,21 +21,31 @@ _G.SDK =
 }
 
 do -- get version.lua
-    local path, url, timer
-    
     SDK.Url = "https://raw.githubusercontent.com/gamsteron/Gamsteron/master/"
-    path = COMMON_PATH .. "Gamsteron_Version.lua"
+
+    local oldPath, newPath, url, timer
+
+    oldPath = COMMON_PATH .. "Gamsteron_Version_Old.lua"
+    newPath = COMMON_PATH .. "Gamsteron_Version_New.lua"
     url = SDK.Url .. "Gamsteron_Version.lua"
     
-    if FileExist(path) then
-        SDK.OldVersion = require("Gamsteron_Version")
+    if FileExist(oldPath) then
+        SDK.OldVersion = require("Gamsteron_Version_Old")
     end
     
-    DownloadFileAsync(url, path, function() end)
+    if FileExist(newPath) then
+        local fi = io.open(newPath, "r")
+        local fo = io.open(oldPath, "w")
+        fo:write(fi:read("*all"))
+        fi:close()
+        fo:close()
+    end
+    
+    DownloadFileAsync(url, newPath, function() end)
     
     timer = os.clock()
     
-    while (not FileExist(path)) do
+    while (not FileExist(newPath)) do
         if os.clock() > timer + 5 then
             assert(false, "Version Timeout ! Please try again 2xF6 !")
             break
@@ -46,7 +56,7 @@ do -- get version.lua
         return
     end
     
-    SDK.NewVersion = require("Gamsteron_Version")
+    SDK.NewVersion = require("Gamsteron_Version_New")
 end
 
 do -- download updates
