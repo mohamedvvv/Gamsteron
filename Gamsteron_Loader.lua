@@ -93,6 +93,7 @@ do -- download updates
     end
 
     if SDK.OldVersion == nil then
+        -- downloading files - only once after installing Gamsteron.lua
         for k, v in pairs(SDK.NewVersion) do
             print("Downloading " .. k .. ".lua, please wait...")
             DownloadFile(COMMON_PATH .. k .. ".lua", SDK.Url .. k .. ".lua")
@@ -102,6 +103,7 @@ do -- download updates
             end
         end
     else
+        -- check if there is a new version
         for k, v in pairs(SDK.NewVersion) do
             if SDK.OldVersion[k] == nil or v > SDK.OldVersion[k] then
                 print("Downloading " .. k .. ".lua, please wait...")
@@ -115,6 +117,15 @@ do -- download updates
         end
     end
 
+    -- download again if the user has deleted a file and the file version is the same as on github
+    for k, v in pairs(SDK.NewVersion) do
+        if not FileExist(COMMON_PATH .. k .. ".lua") then
+            print("Downloading " .. k .. ".lua, please wait...")
+            DownloadFile(COMMON_PATH .. k .. ".lua", SDK.Url .. k .. ".lua")
+        end
+    end
+
+    -- create a new version file after manual removal by the user
     if not FileExist(COMMON_PATH .. "Gamsteron_Version_Old.lua") then
         SaveOldVersion()
     end

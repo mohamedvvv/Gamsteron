@@ -1,7 +1,7 @@
 return {
 Gamsteron_Activator=1.1,
 Gamsteron_Arrays=1.1,
-Gamsteron_Loader=1.5,
+Gamsteron_Loader=1.6,
 Gamsteron_ObjectManager=1.1,
 Gamsteron_Orbwalker=1.1,
 Gamsteron_Utilities=1.1,}
