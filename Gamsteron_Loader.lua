@@ -33,14 +33,6 @@ do -- get version.lua
         SDK.OldVersion = require("Gamsteron_Version_Old")
     end
     
-    if FileExist(newPath) then
-        local fi = io.open(newPath, "r")
-        local fo = io.open(oldPath, "w")
-        fo:write(fi:read("*all"))
-        fi:close()
-        fo:close()
-    end
-    
     DownloadFileAsync(url, newPath, function() end)
     
     timer = os.clock()
@@ -88,11 +80,26 @@ do -- download updates
         DownloadFileAsync(url, path, function() end)
         while not FileExist(path) do end
     end
-    
+
+    local Updated = false
+    local function SaveOldVersion()
+        local oldPath = COMMON_PATH .. "Gamsteron_Version_Old.lua"
+        local newPath = COMMON_PATH .. "Gamsteron_Version_New.lua"
+        local fi = io.open(newPath, "r")
+        local fo = io.open(oldPath, "w")
+        fo:write(fi:read("*all"))
+        fi:close()
+        fo:close()
+    end
+
     if SDK.OldVersion == nil then
         for k, v in pairs(SDK.NewVersion) do
             print("Downloading " .. k .. ".lua, please wait...")
             DownloadFile(COMMON_PATH .. k .. ".lua", SDK.Url .. k .. ".lua")
+            if not Updated then
+                SaveOldVersion()
+                Updated = true
+            end
         end
     else
         for k, v in pairs(SDK.NewVersion) do
@@ -100,6 +107,10 @@ do -- download updates
                 print("Downloading " .. k .. ".lua, please wait...")
                 DownloadFile(COMMON_PATH .. k .. ".lua", SDK.Url .. k .. ".lua")
                 SDK.Downloaded = true
+                if not Updated then
+                    SaveOldVersion()
+                    Updated = true
+                end
             end
         end
     end
