@@ -1037,7 +1037,7 @@ do
         end
         
         -- DRAW
-        if self.MenuDrawings.LastHittableMinions:Value() then
+        if self.MenuDrawings.Enabled:Value() and self.MenuDrawings.LastHittableMinions:Value() then
             for i = 1, #self.FarmMinions do
                 local args = self.FarmMinions[i]
                 local minion = args.Minion
