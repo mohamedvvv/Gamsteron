@@ -97,6 +97,7 @@ do -- download updates
         for k, v in pairs(SDK.NewVersion) do
             print("Downloading " .. k .. ".lua, please wait...")
             DownloadFile(COMMON_PATH .. k .. ".lua", SDK.Url .. k .. ".lua")
+            SDK.Downloaded = true
             if not Updated then
                 SaveOldVersion()
                 Updated = true
@@ -124,6 +125,7 @@ do -- download updates
         if not FileExist(COMMON_PATH .. k .. ".lua") then
             print("Downloading " .. k .. ".lua, please wait...")
             DownloadFile(COMMON_PATH .. k .. ".lua", SDK.Url .. k .. ".lua")
+            SDK.Downloaded = true
         end
     end
 
