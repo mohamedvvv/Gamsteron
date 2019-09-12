@@ -117,8 +117,10 @@ do -- download updates
         end
     end
 
+    SDK.Version = 0
     -- download again if the user has deleted a file and the file version is the same as on github
     for k, v in pairs(SDK.NewVersion) do
+        SDK.Version = SDK.Version + v
         if not FileExist(COMMON_PATH .. k .. ".lua") then
             print("Downloading " .. k .. ".lua, please wait...")
             DownloadFile(COMMON_PATH .. k .. ".lua", SDK.Url .. k .. ".lua")
@@ -446,7 +448,7 @@ function SDK.Menu:Init
     self.Main:MenuElement({id = 'CursorDelay', name = 'Cursor Delay', value = 30, min = 30, max = 50, step = 5})
     
     self.Main:MenuElement({name = '', type = _G.SPACE, id = 'VersionSpaceA'})
-    self.Main:MenuElement({name = 'Version  ' .. SDK.NewVersion.Gamsteron_Loader, type = _G.SPACE, id = 'VersionSpaceB'})
+    self.Main:MenuElement({name = 'Version  ' .. SDK.Version, type = _G.SPACE, id = 'VersionSpaceB'})
     
     _G.LATENCY = self.Main.Latency:Value()
 end
