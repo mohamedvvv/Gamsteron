@@ -216,6 +216,8 @@ do
         end
         return 0
     end
+
+    SDK.BuffManager = Buff
 end
 
 Math =

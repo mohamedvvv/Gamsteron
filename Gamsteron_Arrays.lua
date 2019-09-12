@@ -1,3 +1,7 @@
+
+local _Q, _W, _E, _R = _Q, _W, _E, _R
+local Buff, myHero = SDK.BuffManager, myHero
+
 return {
     JungleTeam =
     300,
