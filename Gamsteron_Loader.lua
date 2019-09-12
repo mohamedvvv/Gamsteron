@@ -331,13 +331,13 @@ function SDK.Menu:Init
     self.Main.Loader:MenuElement({id = "LevelUp", name = "LevelUp", value = true})
     self.Main.Loader:MenuElement({id = "SummonerSpells", name = "SummonerSpells", value = true})
 
-    self.Target = self.Main:MenuElement({id = 'Target', name = 'Target Selector', type = MENU, leftIcon = '/Gamsteron_Orbwalker_TargetSelector.png'})
+    self.Target = self.Main:MenuElement({id = 'Target', name = 'Target Selector', type = MENU, leftIcon = '/Gamsteron_TargetSelector.png'})
     self.Target:MenuElement({id = 'Priorities', name = 'Priorities', type = MENU})
     self.Target:MenuElement({id = 'SelectedTarget', name = 'Selected Target', value = true})
     self.Target:MenuElement({id = 'OnlySelectedTarget', name = 'Only Selected Target', value = false})
     self.Target:MenuElement({id = 'SortMode' .. myHero.charName, name = 'Sort Mode', value = 1, drop = {'Auto', 'Closest', 'Near Mouse', 'Lowest HP', 'Lowest MaxHP', 'Highest Priority', 'Most Stack', 'Most AD', 'Most AP', 'Less Cast', 'Less Attack'}})
     
-    self.Orbwalker = self.Main:MenuElement({id = 'Orbwalker', name = 'Orbwalker', type = MENU, leftIcon = '/Gamsteron_Orbwalker_Orbwalker.png'})
+    self.Orbwalker = self.Main:MenuElement({id = 'Orbwalker', name = 'Orbwalker', type = MENU, leftIcon = '/Gamsteron_Orbwalker.png'})
     self.Orbwalker:MenuElement({id = 'Keys', name = 'Keys', type = MENU})
     self.Orbwalker.Keys:MenuElement({id = 'Combo', name = 'Combo Key', key = string.byte(' ')})
     self.Orbwalker.Keys:MenuElement({id = 'Harass', name = 'Harass Key', key = string.byte('C')})
@@ -424,7 +424,7 @@ function SDK.Menu:Init
         self.Main.Items.HexGun:MenuElement({id = 'FleeHealth', name = 'Flee Target Health % < X', value = 50, min = 0, max = 100, step = 1})
     end
     
-    self.Main:MenuElement({id = 'Drawings', name = 'Drawings', type = MENU, leftIcon = '/Gamsteron_Orbwalker_Drawings.png'})
+    self.Main:MenuElement({id = 'Drawings', name = 'Drawings', type = MENU, leftIcon = '/Gamsteron_Drawings.png'})
     self.Main.Drawings:MenuElement({id = 'Enabled', name = 'Enabled', value = true})
     self.Main.Drawings:MenuElement({id = 'Cursor', name = 'Cursor', value = true})
     self.Main.Drawings:MenuElement({id = 'Range', name = 'AutoAttack Range', value = true})
