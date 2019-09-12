@@ -1,14 +1,14 @@
 
-local Menu, Object, Target, Orbwalker, Cursor, Math, Data
+local Menu = SDK.Menu
+local Math = SDK.Math
+local Data = SDK.Data
+local Object, Target, Orbwalker, Cursor
 
 SDK.Init.Activator = function()
-    Menu = SDK.Menu
     Object = SDK.ObjectManager
     Target = SDK.TargetSelector
     Orbwalker = SDK.Orbwalker
     Cursor = SDK.Cursor
-    Math = SDK.Math
-    Data = SDK.Data
 end
 
 local LevelUp, SummonerSpell, Item

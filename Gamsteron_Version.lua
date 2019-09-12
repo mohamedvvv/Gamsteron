@@ -1,5 +1,5 @@
 return {
-Gamsteron_Activator=1.1,
+Gamsteron_Activator=1.2,
 Gamsteron_Arrays=1.2,
 Gamsteron_Loader=1.6,
 Gamsteron_ObjectManager=1.1,
