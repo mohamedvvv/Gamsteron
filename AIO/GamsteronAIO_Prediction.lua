@@ -114,7 +114,7 @@ do
                     end
                     
                     -- _Yasuo
-                    if (_Yasuo and not yasuoChecked and unit.charName == "_Yasuo") then
+                    if (not yasuoChecked and _Yasuo and unit.charName == "Yasuo") then
                         if (Game.Timer() > _Yasuo.CastTime + 2) then
                             local wallData = unit:GetSpellData(_W)
                             if (wallData.currentCd > 0 and wallData.cd - wallData.currentCd < 1.5) then
@@ -149,7 +149,7 @@ do
                     end
                 end
             end
-            
+
             for id, k in pairs(_PosData) do
                 if (currentHeroes[id] == nil) then
                     if (_Visible[id].visible == true) then
@@ -640,78 +640,29 @@ local function findAngle(p0, p1, p2)
     return angle
 end
 
-local function GetPredictedPosition(from, speed, movespeed, p)
-    local pos, timetohit
-    
+local function GetPredictedPosition(from, delay, speed, radius, movespeed, stype, path)
+    path = CutPath(path, delay * movespeed - radius)
+
     local tT = 0
-    for i = 1, #p - 1 do
-        local a = p[i]
-        local b = p[i + 1]
-        local tB = G.GetDistance(a, b) / movespeed
-        local direction = G.Normalized(b, a)
-        a = G.Extended(a, direction, -(movespeed * tT))
-        local t = G.intercept(from, a, b, speed, movespeed)
+    for i = 1, #path - 1 do
+        local a = path[i]
+        local b = path[i + 1]
+        local dist = Distance(a, b)
+        local tB = dist / movespeed
+        local direction = Normalized(b, a)
+        local a2 = Extended(a, direction, -(movespeed * tT))
+        local t = intercept(from, a2, b, speed, movespeed)
         if (t and t >= tT and t <= tT + tB) then
-            return G.Extended(a, direction, t * movespeed), t
+            local pos = Extended(a2, direction, t * movespeed)
+            if i + 1 = #path and Distance(a, pos) > dist then -- unnecessary, it will never be true because: t >= tT and t <= tT + tB
+                return b, b, t
+            end
+            return Extended(pos, direction, radius), pos, t
         end
         tT = tT + tB
     end
     
-    return nil, -1
-end
-
-local function GetPredictedPosition(from, delay, speed, radius, movespeed, stype, path)
-    from = Get2D(from)
-    local predpos, castpos, timetohit
-    -- spell with only delay
-    if (speed == math.huge) then
-        timetohit = delay
-        predpos = CutPath(path, movespeed * timetohit)[1]
-        castpos = CutPath(path, movespeed * timetohit - radius * 0.9)[1]
-    else
-        -- spell with speed and delay
-        local cancalc = true
-        local timeelapsed = 0
-        local source = from
-        local delaypath = CutPath(path, movespeed * delay)
-        for i = 1, #delaypath - 1 do
-            local sP = delaypath[i]
-            local eP = delaypath[i + 1]
-            local it = intercept(source, sP, eP, speed, movespeed)
-            if (it == nil or it <= 0) then
-                cancalc = false
-                break
-            end
-            local movetime = GetDistance(sP, eP) / movespeed
-            if (movetime >= it) then
-                predpos = Extended(sP, Normalized(eP, sP), it * movespeed)
-                radius = math.min(radius, radius * GetDistance(from, predpos) / 750)
-                radius = radius * 0.0111 * findAngle(predpos, path[1], from)
-                castpos = CutPath(delaypath, movespeed * (timeelapsed + it) - radius)[1]
-                cancalc = false
-                break
-            end
-            -- last path
-            if (i == #delaypath - 1) then
-                predpos = eP
-                castpos = predpos
-                --castpos = CutPath(delaypath, movespeed * (timeelapsed + movetime + (it - movetime) - radiusdelay))[1]
-                cancalc = false
-                break
-            end
-            timeelapsed = timeelapsed + movetime
-            source = Extended(source, Normalized(eP, source), speed * movetime)
-        end
-        if (cancalc and predpos == nil and #delaypath == 1) then
-            predpos = path[#path]
-            castpos = predpos
-        end
-        if (predpos ~= nil) then
-            timetohit = delay + (GetDistance(from, predpos) / speed)
-        end
-    end
-    -- return
-    return predpos, castpos, timetohit
+    return nil, nil, -1
 end
 
 local function GetPathBank(bank, unitPos, time)
