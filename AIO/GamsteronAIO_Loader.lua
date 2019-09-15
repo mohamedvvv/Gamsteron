@@ -11,8 +11,10 @@ _G.GSO =
 {
 }
 
-local DownloadFile, Version, OldVersion, NewVersion
+local Version
 do
+    local DownloadFile, OldVersion, NewVersion
+    
     DownloadFile = function(url, path)
         DownloadFileAsync(url, path, function() end)
         local timer = os.clock()
