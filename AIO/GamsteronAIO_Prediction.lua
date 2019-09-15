@@ -1,34 +1,155 @@
 
--- YASUO
-local Yasuo, IsYasuo
+local _Visible, _PosData, _PathBank, _Waypoints, _Attacks, _Yasuo
 do
-    local AddedToTick = false
+    _Visible = {}
+    _PosData = {}
+    _PathBank = {}
+    _Waypoints = {}
+    _Attacks = {}
     
-    IsYasuo = false
-    
-    Yasuo =
-    {
-        Wall = nil,
-        Name = nil,
-        Level = 0,
-        CastTime = 0,
-        StartPos = nil
-    }
+    SDK.ObjectManager:OnEnemyHeroLoad(function(args)
+        if (args.charName:lower() == "yasuo" and args.isEnemy) then
+            _Yasuo =
+            {
+                Wall = nil,
+                Name = nil,
+                Level = 0,
+                CastTime = 0,
+                StartPos = nil
+            }
+        end
+    end)
     
     Callback.Add("Load", function()
         Callback.Add("Draw", function()
             local currentHeroes = {}
-            local YasuoChecked = false
-            for i, unit in ipairs(GetEnemyHeroes()) do
-                if (IsValid(unit)) then
+            local yasuoChecked = false
+            
+            for i = 1, Game.HeroCount() do
+                local unit = Game.Hero(i)
+                if IsValid(unit) and unit.isEnemy then
                     currentHeroes[unit.networkID] = true
-                    OnWaypoint(unit)
-                    if (IsYasuo and not YasuoChecked and unit.charName == "Yasuo") then
-                        YasuoWallTick(unit)
-                        YasuoChecked = true
+                    
+                    -- OnAttack
+                    local id = unit.networkID
+                    if (_Attacks[id] == nil) then
+                        _Attacks[id] = {startTime = 0, animation = 0, windup = 0, castEndTime = 0, endTime = 0, isCloseToAttack = false}
+                    end
+                    if (unit.isEnemy and unit.attackSpeed > 1.5 and unit.range > 500) then
+                        local spell = unit.activeSpell
+                        if (spell and spell.valid) then
+                            if (spell.castEndTime > _Attacks[id].castEndTime) then
+                                local name = spell.name
+                                if spell.isAutoAttack then
+                                    _Attacks[id].startTime = spell.startTime
+                                    _Attacks[id].animation = spell.animation
+                                    _Attacks[id].windup = spell.windup
+                                    _Attacks[id].castEndTime = spell.castEndTime
+                                    _Attacks[id].endTime = spell.endTime
+                                end
+                            end
+                        end
+                        local isCloseToAttack = false
+                        if (GetDistance(Get2D(unit.pos), Get2D(myHero.pos)) < 1500) then
+                            if (Game.Timer() > _Attacks[id].startTime + (_Attacks[id].animation * 0.75) and Game.Timer() - _Attacks[id].startTime < _Attacks[id].animation * 1.5) then
+                                local unitPos = Get2D(unit.pos)
+                                for i, ally in pairs(GetAllyHeroes()) do
+                                    if (GetDistance(Get2D(ally.pos), unitPos) < unit.range + unit.boundingRadius) then
+                                        isCloseToAttack = true
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                        _Attacks[id].isCloseToAttack = isCloseToAttack
+                    end
+                    
+                    -- OnWaypoint
+                    local unitPos = Get2D(unit.pos)
+                    if (_PosData[id] == nil) then
+                        _PosData[id] = {}
+                        _PosData[id].Pos = unitPos
+                    else
+                        local n = Normalized(unitPos, _PosData[id].Pos)
+                        if (n) then
+                            _PosData[id].Pos = unitPos
+                            _PosData[id].Dir = n
+                        end
+                    end
+                    if (_Visible[id] == nil) then
+                        _Visible[id] = {}
+                        _Visible[id].visible = false
+                    end
+                    if (_Visible[id].visible == false) then
+                        _Visible[id].visible = true
+                        _Visible[id].visibleTick = GetTickCount()
+                    end
+                    if (_PathBank[id] == nil) then
+                        _PathBank[id] = {}
+                    end
+                    if (_Waypoints[id] == nil) then
+                        _Waypoints[id] = {}
+                        _Waypoints[id].tick = 0
+                        _Waypoints[id].stoptick = 0
+                        _Waypoints[id].moving = false
+                        _Waypoints[id].pos = {x = 0, z = 0}
+                    end
+                    local unitPath = unit.pathing
+                    if (unitPath.hasMovePath) then
+                        local endPos = Get2D(unitPath.endPos)
+                        if (VectorsEqual(_Waypoints[id].pos, endPos) == false) then
+                            _Waypoints[id].pos = endPos
+                            _Waypoints[id].tick = GetTickCount()
+                            _Waypoints[id].moving = true
+                            table.insert(_PathBank[id], 1, {pos = endPos, tick = GetTickCount()})
+                            if (#_PathBank[id] > 10) then
+                                table.remove(_PathBank[id])
+                            end
+                        end
+                    else
+                        if (_Waypoints[id].moving) then
+                            _Waypoints[id].stoptick = GetTickCount()
+                            _Waypoints[id].moving = false
+                        end
+                    end
+                    
+                    -- _Yasuo
+                    if (_Yasuo and not yasuoChecked and unit.charName == "_Yasuo") then
+                        if (Game.Timer() > _Yasuo.CastTime + 2) then
+                            local wallData = unit:GetSpellData(_W)
+                            if (wallData.currentCd > 0 and wallData.cd - wallData.currentCd < 1.5) then
+                                _Yasuo.Wall = nil
+                                _Yasuo.Name = nil
+                                _Yasuo.StartPos = nil
+                                _Yasuo.Level = wallData.level
+                                _Yasuo.CastTime = wallData.castTime
+                                for i = 1, Game.ParticleCount() do
+                                    local obj = Game.Particle(i)
+                                    if (obj and obj.name and obj.pos) then
+                                        local name = obj.name:lower()
+                                        if (name:find("yasuo") and name:find("_w_") and name:find("windwall")) then
+                                            if (name:find("activate")) then
+                                                _Yasuo.StartPos = Get2D(obj.pos)
+                                            else
+                                                _Yasuo.Wall = obj
+                                                _Yasuo.Name = obj.name
+                                                break
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        if (_Yasuo.Wall ~= nil) then
+                            if (_Yasuo.Name == nil or _Yasuo.Wall.name == nil or _Yasuo.Name ~= _Yasuo.Wall.name or _Yasuo.StartPos == nil) then
+                                _Yasuo.Wall = nil
+                            end
+                        end
+                        yasuoChecked = true
                     end
                 end
             end
+            
             for id, k in pairs(_PosData) do
                 if (currentHeroes[id] == nil) then
                     if (_Visible[id].visible == true) then
@@ -36,20 +157,6 @@ do
                         _Visible[id].invisibleTick = GetTickCount()
                     end
                 end
-            end
-        end)
-        
-        Callback.Add("Tick", function()
-            if AddedToTick then
-                return
-            end
-            if SDK and SDK.NewVersion and SDK.ObjectManager then
-                SDK.ObjectManager:OnEnemyHeroLoad(function(args)
-                    if (args.CharName == "Yasuo" and args.IsEnemy) then
-                        IsYasuo = true
-                    end
-                end)
-                AddedToTick = true
             end
         end)
     end)
@@ -473,43 +580,6 @@ do
     end
 end
 
--- ATTACKS
-local _Attacks = {}
-local function GetAttackData(unit)
-    local id = unit.networkID
-    if (_Attacks[id] == nil) then
-        _Attacks[id] = {startTime = 0, animation = 0, windup = 0, castEndTime = 0, endTime = 0, isCloseToAttack = false}
-    end
-    if (unit.isEnemy and unit.attackSpeed > 1.5 and unit.range > 500) then
-        local spell = unit.activeSpell
-        if (spell and spell.valid) then
-            if (spell.castEndTime > _Attacks[id].castEndTime) then
-                local name = spell.name
-                if spell.isAutoAttack then
-                    _Attacks[id].startTime = spell.startTime
-                    _Attacks[id].animation = spell.animation
-                    _Attacks[id].windup = spell.windup
-                    _Attacks[id].castEndTime = spell.castEndTime
-                    _Attacks[id].endTime = spell.endTime
-                end
-            end
-        end
-        local isCloseToAttack = false
-        if (GetDistance(Get2D(unit.pos), Get2D(myHero.pos)) < 1500) then
-            if (Game.Timer() > _Attacks[id].startTime + (_Attacks[id].animation * 0.75) and Game.Timer() - _Attacks[id].startTime < _Attacks[id].animation * 1.5) then
-                local unitPos = Get2D(unit.pos)
-                for i, ally in pairs(GetAllyHeroes()) do
-                    if (GetDistance(Get2D(ally.pos), unitPos) < unit.range + unit.boundingRadius) then
-                        isCloseToAttack = true
-                        break
-                    end
-                end
-            end
-        end
-        _Attacks[id].isCloseToAttack = isCloseToAttack
-    end
-end
-
 -- PREDICTED POSITION
 local function GetDashingPrediction(from, speed, radius, delay, movespeed, dashSpeed, dashPath)
     from = Get2D(from)
@@ -527,7 +597,6 @@ local function GetDashingPrediction(from, speed, radius, delay, movespeed, dashS
             end
         else
             local projTime = GetDistance(from, endPos) / speed
-            -- NIE MA TU DELAYA NA LITOSC BOSKA -> to jest czas dolotu do endPos + roznica delay - dashTime (delay jest juz zawarty powyzej !!! - dodajemy juz delay !!!)
             reactionTime = reactionTime + projTime
             if (reactionTime * movespeed < radius - 25) then
                 predPos = endPos
@@ -548,8 +617,6 @@ local function GetDashingPrediction(from, speed, radius, delay, movespeed, dashS
                 timeToHit = delay + t
             else
                 local projTime = GetDistance(from, endPos) / speed
-                -- NIE MA TU DELAYA NA LITOSC BOSKA -> tu odcinek jest dluzszy niz (delay * dashspeed) wiec delaya nie dodajemy bo go zawarlismy w powyzszych obliczeniach,
-                -- spell zaczyna droge z delayem 0 (projTime) odejmujemy od tego pozostaly czas dolotu celu do endPos (od punktu przedluzenia o delay - wiec delay juz jest !!!)
                 local reactionTime = projTime - dashTime
                 if (movespeed * reactionTime < radius - 25) then
                     predPos = endPos
@@ -571,18 +638,6 @@ local function findAngle(p0, p1, p2)
         angle = 180 - angle
     end
     return angle
-end
-
-local function DrawLineRectangle(p1, p2, width, bold, color)
-    local n1 = Perpendicular(Normalized(p1, p2))
-    local x1 = Extended(p1, n1, width / 2)
-    local x2 = Extended(x1, n1, -width)
-    local x3 = Extended(p2, n1, width / 2)
-    local x4 = Extended(x3, n1, -width)
-    Draw.Line(Get3D(x1):To2D(), Get3D(x2):To2D(), bold, color)
-    Draw.Line(Get3D(x3):To2D(), Get3D(x4):To2D(), bold, color)
-    Draw.Line(Get3D(x1):To2D(), Get3D(x3):To2D(), bold, color)
-    Draw.Line(Get3D(x2):To2D(), Get3D(x4):To2D(), bold, color)
 end
 
 local function GetPredictedPosition(from, speed, movespeed, p)
@@ -659,63 +714,6 @@ local function GetPredictedPosition(from, delay, speed, radius, movespeed, stype
     return predpos, castpos, timetohit
 end
 
--- WAYPOINTS
-local _Visible = {}
-local _PosData = {}
-local _PathBank = {}
-local _Waypoints = {}
-local function OnWaypoint(unit)
-    GetAttackData(unit)
-    local id = unit.networkID
-    local unitPos = Get2D(unit.pos)
-    if (_PosData[id] == nil) then
-        _PosData[id] = {}
-        _PosData[id].Pos = unitPos
-    else
-        local n = Normalized(unitPos, _PosData[id].Pos)
-        if (n) then
-            _PosData[id].Pos = unitPos
-            _PosData[id].Dir = n
-        end
-    end
-    if (_Visible[id] == nil) then
-        _Visible[id] = {}
-        _Visible[id].visible = false
-    end
-    if (_Visible[id].visible == false) then
-        _Visible[id].visible = true
-        _Visible[id].visibleTick = GetTickCount()
-    end
-    if (_PathBank[id] == nil) then
-        _PathBank[id] = {}
-    end
-    if (_Waypoints[id] == nil) then
-        _Waypoints[id] = {}
-        _Waypoints[id].tick = 0
-        _Waypoints[id].stoptick = 0
-        _Waypoints[id].moving = false
-        _Waypoints[id].pos = {x = 0, z = 0}
-    end
-    local unitPath = unit.pathing
-    if (unitPath.hasMovePath) then
-        local endPos = Get2D(unitPath.endPos)
-        if (VectorsEqual(_Waypoints[id].pos, endPos) == false) then
-            _Waypoints[id].pos = endPos
-            _Waypoints[id].tick = GetTickCount()
-            _Waypoints[id].moving = true
-            table.insert(_PathBank[id], 1, {pos = endPos, tick = GetTickCount()})
-            if (#_PathBank[id] > 10) then
-                table.remove(_PathBank[id])
-            end
-        end
-    else
-        if (_Waypoints[id].moving) then
-            _Waypoints[id].stoptick = GetTickCount()
-            _Waypoints[id].moving = false
-        end
-    end
-end
-
 local function GetPathBank(bank, unitPos, time)
     local result = {}
     local currentTime = GetTickCount()
@@ -731,47 +729,14 @@ end
 
 -- COLLISION
 local function IsYasuoWall()
-    if (IsYasuo == false or Yasuo.Wall == nil) then
+    if (_Yasuo or _Yasuo.Wall == nil) then
         return false
     end
-    if (Yasuo.Name == nil or Yasuo.Wall.name == nil or Yasuo.Name ~= Yasuo.Wall.name or Yasuo.StartPos == nil) then
-        Yasuo.Wall = nil
+    if (_Yasuo.Name == nil or _Yasuo.Wall.name == nil or _Yasuo.Name ~= _Yasuo.Wall.name or _Yasuo.StartPos == nil) then
+        _Yasuo.Wall = nil
         return false
     end
     return true
-end
-
-local function YasuoWallTick(unit)
-    if (Game.Timer() > Yasuo.CastTime + 2) then
-        local wallData = unit:GetSpellData(_W)
-        if (wallData.currentCd > 0 and wallData.cd - wallData.currentCd < 1.5) then
-            Yasuo.Wall = nil
-            Yasuo.Name = nil
-            Yasuo.StartPos = nil
-            Yasuo.Level = wallData.level
-            Yasuo.CastTime = wallData.castTime
-            for i = 1, Game.ParticleCount() do
-                local obj = Game.Particle(i)
-                if (obj and obj.name and obj.pos) then
-                    local name = obj.name:lower()
-                    if (name:find("yasuo") and name:find("_w_") and name:find("windwall")) then
-                        if (name:find("activate")) then
-                            Yasuo.StartPos = Get2D(obj.pos)
-                        else
-                            Yasuo.Wall = obj
-                            Yasuo.Name = obj.name
-                            break
-                        end
-                    end
-                end
-            end
-        end
-    end
-    if (Yasuo.Wall ~= nil) then
-        if (Yasuo.Name == nil or Yasuo.Wall.name == nil or Yasuo.Name ~= Yasuo.Wall.name or Yasuo.StartPos == nil) then
-            Yasuo.Wall = nil
-        end
-    end
 end
 
 function GetCollision(source, castPos, predPos, speed, delay, radius, collisionTypes, skipID)
@@ -843,16 +808,16 @@ function GetCollision(source, castPos, predPos, speed, delay, radius, collisionT
     end
     
     if (checkYasuoWall and IsYasuoWall()) then
-        local Pos = Get2D(Yasuo.Wall.pos)
+        local Pos = Get2D(_Yasuo.Wall.pos)
         local ExtraWidth = 50 + ExtraCollisionRadius * 2
-        local Width = ExtraWidth + 300 + 50 * Yasuo.Level
-        local Direction = Perpendicular(Normalized(Pos, Yasuo.StartPos))
+        local Width = ExtraWidth + 300 + 50 * _Yasuo.Level
+        local Direction = Perpendicular(Normalized(Pos, _Yasuo.StartPos))
         local StartPos = Extended(Pos, Direction, Width / 2)
         local EndPos = Extended(StartPos, Direction, -Width)
         local IntersectionResult = Intersection(StartPos, EndPos, castPos, source)
         if (IntersectionResult.Intersects) then
             local t = Game.Timer() + delay + (GetDistance(IntersectionResult.Point, source) / speed)
-            if t < Yasuo.CastTime + 4 then
+            if t < _Yasuo.CastTime + 4 then
                 isWall = true
                 collisionCount = collisionCount + 1
             end
