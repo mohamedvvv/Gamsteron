@@ -27,8 +27,14 @@ _G.SDK =
     ORBWALKER_MODE_FLEE = 5,
 }
 
-local DownloadFile, Version, OldVersion, NewVersion
-do
+local Version = 0
+
+if _G.GamsteronUseUpdater == nil then
+    _G.GamsteronUseUpdater = true
+end
+
+if GamsteronUseUpdater then
+    local DownloadFile, OldVersion, NewVersion
     DownloadFile = function(url, path)
         DownloadFileAsync(url, path, function() end)
         local timer = os.clock()
@@ -53,7 +59,6 @@ do
     NewVersion = require("Gamsteron_Version")
     
     -- UPDATE:
-    Version = 0
     local BaseUrl = "https://raw.githubusercontent.com/gamsteron/Gamsteron/master/"
     local success, downloaded = true, false
     for k, v in pairs(NewVersion) do
@@ -85,6 +90,11 @@ do
     if downloaded then
         print("Update Completed, please 2x F6!")
         return
+    end
+else
+    local NewVersion = require("Gamsteron_Version")
+    for k, v in pairs(NewVersion) do
+        Version = Version + v
     end
 end
 

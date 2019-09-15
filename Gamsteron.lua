@@ -1,8 +1,12 @@
 --https://discord.gg/wXfvEKV
+_G.GamsteronUseUpdater = true--change to false if you have trouble with loading
+-- if you set it to false, you must manually download all files
 do
     local path = COMMON_PATH.."Gamsteron_Loader.lua"
     if FileExist(path) then require("Gamsteron_Loader") return end
-    DownloadFileAsync("https://raw.githubusercontent.com/gamsteron/Gamsteron/master/Gamsteron_Loader.lua", path, function() end)
-    while not FileExist(path) do end
-    require("Gamsteron_Loader")
+    if GamsteronUseUpdater then
+	    DownloadFileAsync("https://raw.githubusercontent.com/gamsteron/Gamsteron/master/Gamsteron_Loader.lua", path, function() end)
+	    while not FileExist(path) do end
+	    require("Gamsteron_Loader")
+    end
 end
