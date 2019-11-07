@@ -597,6 +597,10 @@ do
         
         table.insert(SDK.Draw, function()
             
+            if not self.Menu.Enabled:Value() then
+                return
+            end
+            
             if self.MenuDrawings.Range:Value() then
                 Draw.Circle(myHero.pos, Data:GetAutoAttackRange(myHero), 2, Color.Range)
             end
@@ -616,6 +620,10 @@ do
         end)
         
         table.insert(SDK.FastTick, function()
+            if not self.Menu.Enabled:Value() then
+                return
+            end
+            
             Attack:OnTick()
             
             self.IsNone = self:HasMode(self.ORBWALKER_MODE_NONE)
@@ -867,6 +875,10 @@ do
     function Orbwalker:Attack
         (unit)
         
+        if not self.Menu.AttackEnabled:Value() then
+            return
+        end
+        
         if self.AttackEnabled and unit ~= nil and unit.pos ~= nil and unit.pos:ToScreen().onScreen and self:CanAttack() then
             local args = {Target = unit, Process = true}
             
@@ -889,6 +901,10 @@ do
     
     function Orbwalker:Move
         ()
+        
+        if not self.Menu.MovementEnabled:Value() then
+            return
+        end
         
         if self.MovementEnabled and self:CanMove() then
             if self.PostAttackBool then

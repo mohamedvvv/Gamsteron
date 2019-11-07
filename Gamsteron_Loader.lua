@@ -173,6 +173,9 @@ function SDK.Menu:Init
     self.Target:MenuElement({id = 'SortMode' .. myHero.charName, name = 'Sort Mode', value = 1, drop = {'Auto', 'Closest', 'Near Mouse', 'Lowest HP', 'Lowest MaxHP', 'Highest Priority', 'Most Stack', 'Most AD', 'Most AP', 'Less Cast', 'Less Attack'}})
     
     self.Orbwalker = self.Main:MenuElement({id = 'Orbwalker', name = 'Orbwalker', type = MENU, leftIcon = '/Gamsteron_Orbwalker.png'})
+    self.Orbwalker:MenuElement({id = 'Enabled', name = 'Enabled', value = true})
+    self.Orbwalker:MenuElement({id = 'MovementEnabled', name = 'Movement Enabled', value = true})
+    self.Orbwalker:MenuElement({id = 'AttackEnabled', name = 'Attack Enabled', value = true})
     self.Orbwalker:MenuElement({id = 'Keys', name = 'Keys', type = MENU})
     self.Orbwalker.Keys:MenuElement({id = 'Combo', name = 'Combo Key', key = string.byte(' ')})
     self.Orbwalker.Keys:MenuElement({id = 'Harass', name = 'Harass Key', key = string.byte('C')})
