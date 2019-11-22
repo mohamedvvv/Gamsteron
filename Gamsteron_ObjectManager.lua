@@ -743,8 +743,8 @@ do
         if self.MenuPriorities[name] then
             return self.MenuPriorities[name]:Value()
         end
-        if Data.HeroPriorities[name:lower()] then
-            return Data.HeroPriorities[name:lower()]
+        if Data.HEROES[name:lower()] then
+            return Data.HEROES[name:lower()][1]
         end
         return 1
     end

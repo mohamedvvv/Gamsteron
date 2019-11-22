@@ -946,7 +946,7 @@ do
         self.CanDisableMove = self.AllowMovement[self.HeroName]
         self.CanDisableAttack = self.DisableAttackBuffs[self.HeroName]
         self.SpecialMissileSpeed = self.SpecialMissileSpeeds[self.HeroName]
-        self.IsHeroMelee = self.HeroMelees[self.HeroName]
+        self.IsHeroMelee = self.HEROES[self.HeroName][2]
         self.IsHeroSpecialMelee = self.HeroSpecialMelees[self.HeroName]
         self.ExtraAttackRange = self.ExtraAttackRanges[self.HeroName]
         
@@ -1208,8 +1208,8 @@ do
     
     function Data:GetHeroPriority
         (name)
-        local p = self.HeroPriorities[name:lower()]
-        return p and p or 5
+        local p = self.HEROES[name:lower()]
+        return p and p[1] or 5
     end
     
     function Data:GetHeroData
@@ -1222,7 +1222,7 @@ do
             return {}
         end
         local name = obj.charName
-        if name == nil or self.HeroNames[name:lower()] == nil then
+        if name == nil or self.HEROES[name:lower()] == nil then
             return {}
         end
         local Team = obj.team

@@ -351,6 +351,8 @@ Attack =
     
     AttackWindup = 0,
     AttackAnimation = 0,
+
+    IsSenna = myHero.charName == "Senna",
 }
 
 do
@@ -363,23 +365,23 @@ do
             s = s .. k .. ': ' .. tostring(v) .. '\n'
         end
         Draw.Text(s, myHero.pos:To2D())
-    ]]
+    
+        local text = ''
+        local mepos = myHero.pos:To2D()
+        for i = 0, myHero.buffCount do
+            local buff = myHero:GetBuff(i)
+            if buff and buff.count > 0 then
+                text = text .. buff.name .. '\n'
+            end
+        end
+        Draw.Text(text, mepos.x, mepos.y)]]
+
         
         if Buff:HasBuffContainsName(myHero, 'lethaltempoemp') then
             self.HasLethalTempo = true
             self.LethalTempoTimer = GetTickCount()
         elseif GetTickCount() > self.LethalTempoTimer + 1000 then
             self.HasLethalTempo = false
-        end
-        
-        if self.AttackData.windup ~= myHero.attackData.windUpTime then
-            self.AttackData.tickwindup = os.clock() + 1
-            self.AttackData.windup = myHero.attackData.windUpTime
-        end
-        
-        if self.AttackData.anim ~= myHero.attackData.animationTime then
-            self.AttackData.tickanim = os.clock() + 1
-            self.AttackData.anim = myHero.attackData.animationTime
         end
         
         if Data:CanResetAttack() and Orbwalker.Menu.General.AttackResetting:Value() then
@@ -415,7 +417,7 @@ do
     
     function Attack:GetWindup
         ()
-        
+
         if self.SpecialWindup then
             local windup = self.SpecialWindup()
             if windup then
@@ -423,11 +425,7 @@ do
             end
         end
         
-        if self.HasLethalTempo then
-            return myHero.attackData.windUpTime
-        end
-        
-        if os.clock() < self.AttackData.tickwindup and myHero.attackSpeed * (1 / myHero.attackData.animationTime / myHero.attackSpeed) <= 2.5 then
+        if self.HasLethalTempo and not self.IsSenna then
             return myHero.attackData.windUpTime
         end
         
@@ -437,17 +435,9 @@ do
     function Attack:GetAnimation
         ()
         
-        if math.abs(myHero.attackData.animationTime - self.AttackAnimation) > 0.25 then
-            return myHero.attackData.animationTime
-        end
-        
-        if self.HasLethalTempo then
+        if self.HasLethalTempo and not self.IsSenna then
             --print(myHero.attackData.animationTime .. ' ' .. self.AttackAnimation)
             --print(myHero.attackSpeed * (1 / myHero.attackData.animationTime / myHero.attackSpeed))
-            return myHero.attackData.animationTime
-        end
-        
-        if os.clock() < self.AttackData.tickanim and myHero.attackSpeed * (1 / myHero.attackData.animationTime / myHero.attackSpeed) <= 2.5 then
             return myHero.attackData.animationTime
         end
         

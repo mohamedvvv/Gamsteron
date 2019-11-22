@@ -50,10 +50,9 @@ do
         self.Enabled = Menu.AutoLevelUp.Enabled
         self.StartAt = Menu.AutoLevelUp.StartAt
         self.SkillOrderMenu = Menu.SkillOrder
-        
         local skillOrders = Data.SKILL_ORDERS[myHero.charName:lower()]
-        self.SkillOrder1 = skillOrders['MostFrequent']
-        self.SkillOrder2 = skillOrders['HighestWin']
+        self.SkillOrder1 = skillOrders['M']
+        self.SkillOrder2 = skillOrders['W']
         self.CurrentOrder = self.SkillOrder2
         
         table.insert(SDK.Tick, function()

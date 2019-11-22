@@ -1307,7 +1307,7 @@ function Vayne:CreateMenu()
             ["Azir"] = true,
             ["Velkoz"] = true
         }
-        if SDKData.HeroMelees[args.charName:lower()] and not notMelee[args.charName] then
+        if SDKData.HEROES[args.charName:lower()][2] and not notMelee[args.charName] then
             Menu.eset.useonmelee:MenuElement({id = args.charName, name = args.charName, value = true})
         end
     end)
