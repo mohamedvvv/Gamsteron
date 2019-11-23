@@ -488,10 +488,12 @@ do
     end
     
     function Attack:IsActive
-        ()
+        (num)
         
+        num = num or 0
+
         if self.CastEndTime > self.LocalStart then
-            if Game.Timer() >= self.ServerStart + self:GetWindup() - Data:GetLatency() + 0.025 + Orbwalker.Menu.General.ExtraWindUpTime:Value() * 0.001 then
+            if Game.Timer() >= self.ServerStart + self:GetWindup() - Data:GetLatency() + 0.025 + num + Orbwalker.Menu.General.ExtraWindUpTime:Value() * 0.001 then
                 return false
             end
             return true
@@ -897,7 +899,7 @@ do
         end
         
         if self.MovementEnabled and self:CanMove() then
-            if self.PostAttackBool then
+            if self.PostAttackBool and not Attack:IsActive(0.025) then
                 for i = 1, #self.OnPostAttackCb do
                     self.OnPostAttackCb[i]()
                 end
@@ -905,7 +907,7 @@ do
                 self.PostAttackBool = false
             end
             
-            if Game.Timer() < self.PostAttackTimer + 0.15 then
+            if not Attack:IsActive(0.025) and Game.Timer() < self.PostAttackTimer + 0.15 then
                 for i = 1, #self.OnPostAttackTickCb do
                     self.OnPostAttackTickCb[i]()
                 end
