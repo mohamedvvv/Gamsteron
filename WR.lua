@@ -13,6 +13,8 @@ if _G.WR_COMMON_LOADED then
 end
 _G.WR_COMMON_LOADED = true
 
+local LoadCallbacks = {}
+
 local currentData = {
     Champions = {
         Ashe = {
@@ -569,22 +571,19 @@ local Color = {
     Black = DrawColor(255, 0, 0, 0),
 }
 
---<Interfaces Control>
-if not SDK then
-    local res, str = Game.Resolution(), "PLEASE ENABLE ICS ORBWALKER"
-    Callback.Add("Draw", function()
-        DrawText(str, 64, res.x / 2 - (#str * 14), res.y / 2, Color.Red)
-    end)
-    return
-end
-local _ENV = _G
-local SDK = _G.SDK
-local Orbwalker = SDK.Orbwalker
-local ObjectManager = SDK.ObjectManager
-local TargetSelector = SDK.TargetSelector
-local HealthPrediction = SDK.HealthPrediction
---local Prediction     = Pred --Wont work cuz its being initialized before the class
---</Interfaces Control>
+local SDK
+local Orbwalker
+local ObjectManager
+local TargetSelector
+local HealthPrediction
+
+table.insert(LoadCallbacks, function()
+	SDK = _G.SDK
+	Orbwalker = SDK.Orbwalker
+	ObjectManager = SDK.ObjectManager
+	TargetSelector = SDK.TargetSelector
+	HealthPrediction = SDK.HealthPrediction
+end)
 
 --<IOrbwalker>
 
@@ -787,7 +786,8 @@ local function DrawMark(pos, thickness, size, color)
         hPos:To2D(),
         RotateAroundPoint(offset, hPos, rotateAngle):To2D(),
         RotateAroundPoint(offset, hPos, rotateAngle + mod):To2D(),
-    RotateAroundPoint(offset, hPos, rotateAngle + 2 * mod):To2D()}
+    	RotateAroundPoint(offset, hPos, rotateAngle + 2 * mod):To2D(),
+	}
     --
     for i = 1, #points do
         for j = 1, #points do
@@ -2560,7 +2560,10 @@ if myHero.charName == "Ashe" then
         DrawSpells(self)
     end
     
-    Ashe()
+	table.insert(LoadCallbacks, function()
+		Ashe()
+	end)
+    
 elseif myHero.charName == "Blitzcrank" then
     
     class 'Blitzcrank'
@@ -2834,7 +2837,9 @@ elseif myHero.charName == "Blitzcrank" then
         return HasBuff(unit, "rocketgrab2")
     end
     
-    Blitzcrank()
+	table.insert(LoadCallbacks, function()
+		Blitzcrank()
+	end)
     
 elseif myHero.charName == "Corki" then
     
@@ -3126,7 +3131,9 @@ elseif myHero.charName == "Corki" then
         return self:HasBigOne() and self.R:GetDamage(unit, 2) or self.R:GetDamage(unit)
     end
     
-    Corki()
+	table.insert(LoadCallbacks, function()
+		Corki()
+	end)
     
 elseif myHero.charName == "Darius" then
     
@@ -3471,7 +3478,9 @@ elseif myHero.charName == "Darius" then
         end
     end
     
-    Darius()
+	table.insert(LoadCallbacks, function()
+		Darius()
+	end)
     
 elseif myHero.charName == "Draven" then
     
@@ -3836,7 +3845,9 @@ elseif myHero.charName == "Draven" then
         return #self.AxeList + axesOnHand
     end
     
-    Draven()
+	table.insert(LoadCallbacks, function()
+		Draven()
+	end)
     
 elseif myHero.charName == "Ezreal" then
     
@@ -4148,7 +4159,10 @@ elseif myHero.charName == "Ezreal" then
         return result[1][2] == 0 and result[1][1]
     end
     
-    Ezreal()
+	table.insert(LoadCallbacks, function()
+		Ezreal()
+	end)
+
 elseif myHero.charName == "Jax" then
     
     class 'Jax'
@@ -4550,7 +4564,10 @@ elseif myHero.charName == "Jax" then
         end
     end
     
-    Jax()
+	table.insert(LoadCallbacks, function()
+		Jax()
+	end)
+
 elseif myHero.charName == "Jhin" then
     class 'Jhin'
     
@@ -4971,11 +4988,13 @@ elseif myHero.charName == "Jhin" then
         end
     end
     
-    Jhin()
+	table.insert(LoadCallbacks, function()
+		Jhin()
+	end)
     
 elseif myHero.charName == "Kalista" then
     
-    local Kalista = {}
+    class 'Kalista'
     
     function Kalista:__init()
         --[[Data Initialization]]
@@ -5421,7 +5440,9 @@ elseif myHero.charName == "Kalista" then
         end
     end
     
-    Kalista:__init()
+	table.insert(LoadCallbacks, function()
+		Kalista()
+	end)
     
 elseif myHero.charName == "Lucian" then
     class 'Lucian'
@@ -5579,6 +5600,7 @@ elseif myHero.charName == "Lucian" then
         Menu:MenuElement({name = myHero.charName.." Script version: ", drop = {self.scriptVersion}})
         
         self.menuLoadRequired = true
+        self.menuDeleted = false
         Callback.Add("Tick", function() self:MenuLoad() end)
     end
     
@@ -5617,8 +5639,9 @@ elseif myHero.charName == "Lucian" then
             Menu.R.ComboWhiteList.info:Hide(true)
             
             self.menuLoadRequired = nil
-        else
+        elseif not self.menuDeleted then
             Callback.Del("Tick", function() self:MenuLoad() end)
+            self.menuDeleted = true
         end
     end
     
@@ -5650,7 +5673,7 @@ elseif myHero.charName == "Lucian" then
                     local minion = self.minions[i]
                     if minion and self.Q:CanCast(minion) then
                         local minionPos = myHero.pos:Extended(minion.pos, self.Q2.Range)
-                        
+
                         if GetDistance(targetPos, minionPos) <= self.Q2.Radius + target.boundingRadius then
                             self.Q:Cast(minion)
                         end
@@ -5693,7 +5716,6 @@ elseif myHero.charName == "Lucian" then
             
             self.E:Cast(castPos)
         end
-        ResetAutoAttack()
     end
     
     function Lucian:Combo()
@@ -5866,7 +5888,9 @@ elseif myHero.charName == "Lucian" then
         end
     end
     
-    Lucian()
+	table.insert(LoadCallbacks, function()
+		Lucian()
+	end)
     
 elseif myHero.charName == "Olaf" then
     
@@ -6200,7 +6224,10 @@ Titanic = 3748
         end
     end
     
-    Olaf()
+	table.insert(LoadCallbacks, function()
+		Olaf()
+	end)
+
 elseif myHero.charName == "Riven" then
     
     class 'Riven'
@@ -7074,7 +7101,10 @@ elseif myHero.charName == "Riven" then
         KeyUp(k)
     end
     
-    Riven()
+	table.insert(LoadCallbacks, function()
+		Riven()
+	end)
+
 elseif myHero.charName == "Sion" then
     
     class 'Sion'
@@ -7464,12 +7494,14 @@ elseif myHero.charName == "Sion" then
             return self.W:Cast()
         end
     end
-    
-    Sion()
+
+	table.insert(LoadCallbacks, function()
+		Sion()
+	end)
     
 elseif myHero.charName == "Syndra" then
     
-    local Syndra = {}
+    class 'Syndra'
     
     function Syndra:__init()
         --[[Data Initialization]]
@@ -7658,8 +7690,10 @@ elseif myHero.charName == "Syndra" then
                 end
             end
             local count = -13
-            for _ in pairs(Menu.QE.Interrupt) do count = count + 1 end
-if count == 1 then
+            for _ in pairs(Menu.QE.Interrupt) do
+            	count = count + 1
+            end
+			if count == 1 then
                 Menu.QE.Interrupt:MenuElement({name = "No Spells To Be Interrupted", drop = {" "}})
                 Callback.Del("Tick", function() Interrupter:OnTick() end)
             end
@@ -7937,7 +7971,10 @@ if count == 1 then
         end
     end
     
-    Syndra:__init()
+	table.insert(LoadCallbacks, function()
+		Syndra()
+	end)
+
 elseif myHero.charName == "Talon" then
     
     class 'Talon'
@@ -8254,7 +8291,10 @@ elseif myHero.charName == "Talon" then
         end
     end
     
-    Talon()
+	table.insert(LoadCallbacks, function()
+		Talon()
+	end)
+
 elseif myHero.charName == "Teemo" then
     
     class 'Teemo'
@@ -8695,10 +8735,13 @@ elseif myHero.charName == "Teemo" then
         }
     end
     
-    Teemo()
+	table.insert(LoadCallbacks, function()
+		Teemo()
+	end)
+
 elseif myHero.charName == "Thresh" then
     
-    local Thresh = {}
+    class 'Thresh'
     
     function Thresh:__init()
         --[[Data Initialization]]
@@ -8990,7 +9033,10 @@ elseif myHero.charName == "Thresh" then
         end
     end
     
-    Thresh:__init()
+	table.insert(LoadCallbacks, function()
+		Thresh()
+	end)
+
 elseif myHero.charName == "TwistedFate" then
     
     class 'TwistedFate'
@@ -9201,7 +9247,10 @@ elseif myHero.charName == "TwistedFate" then
         return self.W:IsReady() and self.IsPicking == false and Timer() - self.W.LastCast >= 0.3
     end
     
-    TwistedFate()
+	table.insert(LoadCallbacks, function()
+		TwistedFate()
+	end)
+    
 elseif myHero.charName == "Twitch" then
     
     class 'Twitch'
@@ -9537,8 +9586,11 @@ elseif myHero.charName == "Twitch" then
             end
         end
     end
-    
-    _G["Twitch"] = Twitch()
+
+	table.insert(LoadCallbacks, function()
+		Twitch()
+	end)
+
 elseif myHero.charName == "Varus" then
     
     class 'Varus'
@@ -9880,7 +9932,9 @@ elseif myHero.charName == "Varus" then
         return (not target or GetDistance(target) > self.E.Range) or (checkMode and spell.currentCd ~= 0 and spell.cd - spell.currentCd >= 1)
     end
     
-    Varus()
+	table.insert(LoadCallbacks, function()
+		Varus()
+	end)
     
 elseif myHero.charName == "Vayne" then
     
@@ -10275,7 +10329,10 @@ elseif myHero.charName == "Vayne" then
         return best
     end
     
-    Vayne()
+	table.insert(LoadCallbacks, function()
+		Vayne()
+	end)
+    
 elseif myHero.charName == "Vladimir" then
     
     class 'Vladimir'
@@ -10686,8 +10743,10 @@ elseif myHero.charName == "Vladimir" then
             Control.CastSpell(key, target)
         end
     end
-    
-    Vladimir()
+
+	table.insert(LoadCallbacks, function()
+		Vladimir()
+	end)
     
 elseif myHero.charName == "Xayah" then
     
@@ -11088,6 +11147,15 @@ elseif myHero.charName == "Xayah" then
             self.E:Cast()
         end
     end
+
+	table.insert(LoadCallbacks, function()
+		Xayah()
+	end)
     
-    Xayah()
 end
+
+Callback.Add('Load', function()
+	for i = 1, #LoadCallbacks do
+		LoadCallbacks[i]()
+	end
+end)
